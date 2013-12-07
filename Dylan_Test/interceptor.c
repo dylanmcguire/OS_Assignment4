@@ -114,7 +114,7 @@ static int __init interceptor_start(void)
 	original_fork = (void *)sys_call_table[__NR_fork];
 	ref_sys_close = (void *)sys_call_table[__NR_close];
         sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
-        //sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
+        sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)new_sys_write;
 	//sys_call_table[__NR_fork] = (unsigned long *)new_fork;
 	sys_call_table[__NR_close] = (unsigned long *)new_close;
@@ -136,10 +136,10 @@ static void __exit interceptor_end(void)
 	sys_call_table[__NR_close] = (unsigned long *)ref_sys_close;
         enable_page_protection();
 	
-	printk(KERN_ALERT "Number of calls to sys_read: %d", num_sys_read_calls);
-	printk(KERN_ALERT "Number of calls to sys_write: %d", num_sys_write_calls);
-	printk(KERN_ALERT "Number of calls to sys_open: %d", num_sys_open_calls);
-	printk(KERN_ALERT "Number of calls to sys_close: %d", num_sys_read_calls);
+	printk(KERN_ALERT "Number of calls to sys_read: %d\n", num_sys_read_calls);
+	printk(KERN_ALERT "Number of calls to sys_write: %d\n", num_sys_write_calls);
+	printk(KERN_ALERT "Number of calls to sys_open: %d\n", num_sys_open_calls);
+	printk(KERN_ALERT "Number of calls to sys_close: %d\n", num_sys_read_calls);
 }
 
 module_init(interceptor_start);
