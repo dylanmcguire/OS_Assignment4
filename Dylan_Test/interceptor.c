@@ -139,7 +139,7 @@ static void __exit interceptor_end(void)
 	printk(KERN_ALERT "Number of calls to sys_read: %d\n", num_sys_read_calls);
 	printk(KERN_ALERT "Number of calls to sys_write: %d\n", num_sys_write_calls);
 	printk(KERN_ALERT "Number of calls to sys_open: %d\n", num_sys_open_calls);
-	printk(KERN_ALERT "Number of calls to sys_close: %d\n", num_sys_read_calls);
+	printk(KERN_ALERT "Number of calls to sys_close: %d\n", num_sys_close_calls);
 }
 
 module_init(interceptor_start);
