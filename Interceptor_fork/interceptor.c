@@ -8,7 +8,7 @@ asmlinkage long (*ref_sys_read)(unsigned int fd, char __user *buf, size_t count)
 asmlinkage long (*ref_sys_write)(unsigned int fd, const char __user *buf, size_t count);
 
 asmlinkage long (*original_fork)(struct pt_regs);
-
+int num_sys_read_calls = 0;
 
 asmlinkage long new_sys_write(unsigned int fd, const char __user *buf, size_t count)
 {
@@ -24,22 +24,23 @@ asmlinkage long new_sys_read(unsigned int fd, char __user *buf, size_t count)
 {
         long ret;
         ret = ref_sys_read(fd, buf, count);
-
+	
+	num_sys_read_calls = num_sys_read_calls + 1;
+	
         if(count == 1 && fd == 0)
-                printk(KERN_INFO "intercept: 0x%02X", buf[0]);
+                printk(KERN_INFO "Read intercepted: %i\n", num_sys_read_calls);
 
         return ret;
 }
 
 asmlinkage long new_fork(struct pt_regs regs)
 {
-    long ret;
-        ret = original_fork(regs);
  printk(KERN_ALERT "[edu] fork syscall intercepted from\n");
-  // making the call to the original fork syscall
+  
  
+ // making the call to the original fork syscall
  
- return ret;
+ return original_fork(regs);
 }
 
 
@@ -95,7 +96,7 @@ static int __init interceptor_start(void)
         sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
         sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)new_sys_write;
-	sys_call_table[__NR_fork] = (unsigned long *)new_fork;
+	//sys_call_table[__NR_fork] = (unsigned long *)new_fork;
         enable_page_protection();
 
         return 0;
@@ -110,6 +111,7 @@ static void __exit interceptor_end(void)
         sys_call_table[__NR_open] = (unsigned long *)ref_sys_open;
         sys_call_table[__NR_read] = (unsigned long *)ref_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)ref_sys_write;
+	//sys_call_table[__NR_fork] = (unsigned long *)original_fork;
         enable_page_protection();
 }
 
