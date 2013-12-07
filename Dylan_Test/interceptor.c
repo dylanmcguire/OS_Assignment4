@@ -1,6 +1,5 @@
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
-#include  <sys/types.h>
 
 unsigned long **sys_call_table;
 
@@ -97,7 +96,7 @@ static int __init interceptor_start(void)
         sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
         sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)new_sys_write;
-	//sys_call_table[__NR_fork] = (unsigned long *)new_fork;
+	sys_call_table[__NR_fork] = (unsigned long *)new_fork;
         enable_page_protection();
 
         return 0;
@@ -112,7 +111,7 @@ static void __exit interceptor_end(void)
         sys_call_table[__NR_open] = (unsigned long *)ref_sys_open;
         sys_call_table[__NR_read] = (unsigned long *)ref_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)ref_sys_write;
-	//sys_call_table[__NR_fork] = (unsigned long *)original_fork;
+	sys_call_table[__NR_fork] = (unsigned long *)original_fork;
         enable_page_protection();
 }
 
