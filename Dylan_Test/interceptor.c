@@ -9,15 +9,21 @@ asmlinkage long (*ref_sys_write)(unsigned int fd, const char __user *buf, size_t
 asmlinkage long (*original_fork)(struct pt_regs);
 asmlinkage long (*ref_sys_close)(unsigned int p);
 int num_sys_read_calls = 0;
+int num_sys_write_calls = 0;
+int num_sys_open_calls = 0;
 
 asmlinkage long new_sys_write(unsigned int fd, const char __user *buf, size_t count)
 {
         return ref_sys_write(fd, buf, count);
-}
+	num_sys_write_calls = num_sys_write_calls + 1;
+	printk(KERN_INFO "Write intercepted: %i\n", num_sys_write_calls);
+} 
 
 asmlinkage long new_sys_open(const char __user *filename, int flags, umode_t mode)
 {
         return ref_sys_open(filename, flags, mode);
+	num_sys_open_calls = num_sys_open_calls + 1;
+	printk(KERN_INFO "Open intercepted: %i\n", num_sys_open_calls);
 }
 
 asmlinkage long new_sys_read(unsigned int fd, char __user *buf, size_t count)
@@ -101,7 +107,7 @@ static int __init interceptor_start(void)
 	original_fork = (void *)sys_call_table[__NR_fork];
 	ref_sys_close = (void *)sys_call_table[__NR_close];
         sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
-        sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
+        //sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)new_sys_write;
 	//sys_call_table[__NR_fork] = (unsigned long *)new_fork;
 	sys_call_table[__NR_close] = (unsigned long *)new_close;
