@@ -11,19 +11,24 @@ asmlinkage long (*ref_sys_close)(unsigned int p);
 int num_sys_read_calls = 0;
 int num_sys_write_calls = 0;
 int num_sys_open_calls = 0;
+int num_sys_close_calls = 0;
 
 asmlinkage long new_sys_write(unsigned int fd, const char __user *buf, size_t count)
 {
-        return ref_sys_write(fd, buf, count);
+        
 	num_sys_write_calls = num_sys_write_calls + 1;
 	printk(KERN_INFO "Write intercepted: %i\n", num_sys_write_calls);
+	
+	return ref_sys_write(fd, buf, count);
 } 
 
 asmlinkage long new_sys_open(const char __user *filename, int flags, umode_t mode)
 {
-        return ref_sys_open(filename, flags, mode);
+        
 	num_sys_open_calls = num_sys_open_calls + 1;
 	printk(KERN_INFO "Open intercepted: %i\n", num_sys_open_calls);
+	
+	return ref_sys_open(filename, flags, mode);
 }
 
 asmlinkage long new_sys_read(unsigned int fd, char __user *buf, size_t count)
@@ -50,7 +55,9 @@ asmlinkage long new_fork(struct pt_regs regs)
 }
 
 asmlinkage long new_close(unsigned int p) {
-   printk(KERN_ALERT "Intercepted close");
+   printk(KERN_ALERT "Intercepted close\n");
+   
+   num_sys_close_calls = num_sys_close_calls + 1;
    
    return ref_sys_close(p);
 }
@@ -128,6 +135,11 @@ static void __exit interceptor_end(void)
 	sys_call_table[__NR_fork] = (unsigned long *)original_fork;
 	sys_call_table[__NR_close] = (unsigned long *)ref_sys_close;
         enable_page_protection();
+	
+	printk(KERN_ALERT "Number of calls to sys_read: %d", num_sys_read_calls);
+	printk(KERN_ALERT "Number of calls to sys_write: %d", num_sys_write_calls);
+	printk(KERN_ALERT "Number of calls to sys_open: %d", num_sys_open_calls);
+	printk(KERN_ALERT "Number of calls to sys_close: %d", num_sys_read_calls);
 }
 
 module_init(interceptor_start);
