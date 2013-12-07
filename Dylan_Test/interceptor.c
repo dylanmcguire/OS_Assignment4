@@ -1,5 +1,6 @@
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
+#include <asm-generic/syscall.h>
 
 unsigned long **sys_call_table;
 
@@ -12,6 +13,7 @@ int num_sys_read_calls = 0;
 int num_sys_write_calls = 0;
 int num_sys_open_calls = 0;
 int num_sys_close_calls = 0;
+int num_sys_fork_calls = 0;
 
 asmlinkage long new_sys_write(unsigned int fd, const char __user *buf, size_t count)
 {
@@ -46,12 +48,12 @@ asmlinkage long new_sys_read(unsigned int fd, char __user *buf, size_t count)
 
 asmlinkage long new_fork(struct pt_regs regs)
 {
- printk(KERN_ALERT "[edu] fork syscall intercepted from\n");
   
+    num_sys_fork_calls = num_sys_fork_calls + 1;
+  
+    printk(KERN_ALERT "Fork intercepted: %d\n", num_sys_fork_calls);
  
- // making the call to the original fork syscall
- 
- return original_fork(regs);
+    return original_fork(regs);
 }
 
 asmlinkage long new_close(unsigned int p) {
@@ -116,7 +118,7 @@ static int __init interceptor_start(void)
         sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
         sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)new_sys_write;
-	//sys_call_table[__NR_fork] = (unsigned long *)new_fork;
+	sys_call_table[__NR_fork] = (unsigned long *)new_fork;
 	sys_call_table[__NR_close] = (unsigned long *)new_close;
         enable_page_protection();
 
@@ -140,6 +142,7 @@ static void __exit interceptor_end(void)
 	printk(KERN_ALERT "Number of calls to sys_write: %d\n", num_sys_write_calls);
 	printk(KERN_ALERT "Number of calls to sys_open: %d\n", num_sys_open_calls);
 	printk(KERN_ALERT "Number of calls to sys_close: %d\n", num_sys_close_calls);
+	printk(KERN_ALERT "Number of calls to sys_fork: %d\n", num_sys_fork_calls);
 }
 
 module_init(interceptor_start);
