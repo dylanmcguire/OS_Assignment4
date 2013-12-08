@@ -118,7 +118,7 @@ static int __init interceptor_start(void)
         sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
         sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
         sys_call_table[__NR_write] = (unsigned long *)new_sys_write;
-	//sys_call_table[__NR_fork] = (unsigned long *)new_fork;
+	sys_call_table[__NR_fork] = (unsigned long *)new_fork;
 	sys_call_table[__NR_close] = (unsigned long *)new_close;
         enable_page_protection();
 
